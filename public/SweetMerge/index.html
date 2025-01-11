@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sweet Merge</title>
+	<meta charset="utf-8">
+	<!-- Allow fullscreen mode on iOS devices. (These are Apple specific meta tags.) -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	<link rel="apple-touch-icon" sizes="256x256" href="images/icon.png" />
+	<meta name="HandheldFriendly" content="true" />
+	
+	<!-- Chrome for Android web app tags -->
+	<meta name="mobile-web-app-capable" content="yes" />
+	<link rel="shortcut icon" sizes="256x256" href="images/icon.png" />
+	<style type="text/css">
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		html, body {
+			overflow: hidden;
+			touch-action: none;
+			-ms-touch-action: none;
+		}
+		body {
+			background-image: url('images/cover.png');
+			background-size: inherit;
+			background-color: #000000;
+		}
+		canvas {
+			touch-action: none;
+			-ms-touch-action: none;
+		}
+		@font-face {
+		  font-family: 'vanilla';
+		  font-style: normal;
+		  font-weight: 400;
+		  src: url(fonts/vanilla-extract.ttf) format('truetype');
+		}
+	</style>
+	<script type="text/javascript" src="scripts/phaser.min.js"></script>
+	<script src="https://telegram.org/js/telegram-web-app.js?2"></script>
+	<!-- Firebase SDK -->
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+	<script>
+		 let userTgID = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+		// Firebase configuration
+		var firebaseConfig = {
+		   apiKey: "AIzaSyCEJ0NmQcRoT1r9zuULQjXDG4FIFMZiPGM",
+		   authDomain: "marble-883a4.firebaseapp.com",
+		   projectId: "marble-883a4",
+		   storageBucket: "marble-883a4.appspot.com",
+		   messagingSenderId: "257433608827",
+		   appId: "1:257433608827:web:307cc5e99858a781c838de"
+		};
+
+		// Helper function to load a script
+		function loadScript(src, callback) {
+			var script = document.createElement('script');
+			script.src = src;
+			script.async = false; // Ensures synchronous loading
+			script.onload = callback;
+			script.onerror = function() {
+				console.error("Error loading script:", src);
+			};
+			document.head.appendChild(script);
+		}
+
+		// Firebase initialization function
+		function initializeFirebase() {
+			firebase.initializeApp(firebaseConfig);
+			window.db = firebase.firestore();
+			console.log("Firebase initialized");
+		}
+
+		// Load Firebase SDK scripts synchronously
+		loadScript("https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js", function () {
+			loadScript("https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js", function () {
+				initializeFirebase();
+			});
+		});
+
+		function saveScoreToFirebase(amount) {
+    let userTgID = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+
+    if (!userTgID) {
+        console.error("Telegram User ID not found.");
+        return;
+    }
+
+    if (window.db) {
+        const userDocRef = window.db.collection("telegramUsers").doc(userTgID.toString());
+
+        // Use Firestore's increment to add the incremental score amount
+        userDocRef.update({ balance: firebase.firestore.FieldValue.increment(amount) })
+            .then(() => {
+                console.log("Incremental score added successfully:", amount);
+            })
+            .catch((error) => {
+                console.error("Error updating score:", error);
+            });
+    } else {
+        console.error("Firestore is not initialized.");
+    }
+}
+	</script>
+</head>
+<body>
+	<div style="font-family:vanilla; position:absolute; left:-1000px; visibility:hidden;">.</div>
+	<div id="game-content"></div>
+	<script type="text/javascript" src="scripts/SpinePlugin.min.js"></script>
+	<script type="text/javascript" src="scripts/lib.js"></script>
+	<script type="text/javascript" src="scripts/global.js"></script>
+	<script type="text/javascript" src="scripts/boot.js"></script>
+	<script type="text/javascript" src="scripts/preload.js"></script>
+	<script type="text/javascript" src="scripts/home.js"></script>
+	<script type="text/javascript" src="scripts/game.js"></script>
+
+	<!-- saveScoreToFirebase(iScore);-->
+</body>
+</html>

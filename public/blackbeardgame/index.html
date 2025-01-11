@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SLOT BLACK BEARD</title>
+        <link rel="stylesheet" href="css/reset.css" type="text/css">
+        <link rel="stylesheet" href="css/main.css" type="text/css">
+        <link rel="stylesheet" href="css/orientation_utils.css" type="text/css">
+        <link rel="stylesheet" href="css/ios_fullscreen.css" type="text/css">
+        <link rel='shortcut icon' type='image/x-icon' href='./favicon.ico' />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui" />
+        <meta name="msapplication-tap-highlight" content="no"/>
+
+        <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>        
+        <script type="text/javascript" src="js/createjs.min.js"></script>
+        <script type="text/javascript" src="js/howler.min.js"></script>
+        <script type="text/javascript" src="js/screenfull.js"></script>
+        
+        <script type="text/javascript" src="js/platform.js"></script>
+        <script type="text/javascript" src="js/ios_fullscreen.js"></script>
+        <script type="text/javascript" src="js/ctl_utils.js"></script>
+        <script type="text/javascript" src="js/sprite_lib.js"></script>
+        <script type="text/javascript" src="js/settings.js"></script>
+        <script type="text/javascript" src="js/CAPIController.js"></script>
+        <script type="text/javascript" src="js/CSlotSettings.js"></script>
+        <script type="text/javascript" src="js/CMenu.js"></script>
+        <script type="text/javascript" src="js/CCreditsPanel.js"></script>
+        <script type="text/javascript" src="js/CAreYouSurePanel.js"></script>
+        <script type="text/javascript" src="js/CCTLText.js"></script>
+        <script type="text/javascript" src="js/CLang.min.js"></script>
+        <script type="text/javascript" src="js/CPreloader.js"></script>
+        <script type="text/javascript" src="js/CMain.js"></script>
+        <script type="text/javascript" src="js/CSpriteSheetTextButton.js"></script>
+        <script type="text/javascript" src="js/CGfxButton.js"></script>
+        <script type="text/javascript" src="js/CToggle.js"></script>
+        <script type="text/javascript" src="js/CBetBut.js"></script>
+        <script type="text/javascript" src="js/CGame.js"></script>
+        <script type="text/javascript" src="js/CReelColumn.js"></script>
+        <script type="text/javascript" src="js/CInterface.js"></script>
+        <script type="text/javascript" src="js/CPaytablePanelBase.js"></script>
+        <script type="text/javascript" src="js/CPaytableLandscape.js"></script>
+        <script type="text/javascript" src="js/CPaytablePortrait.js"></script>
+        <script type="text/javascript" src="js/CStaticSymbolCell.js"></script>
+        <script type="text/javascript" src="js/CTweenController.js"></script>
+        <script type="text/javascript" src="js/CMsgBox.js"></script>
+        <script type="text/javascript" src="js/CBonusPanel.js"></script>
+        <script type="text/javascript" src="js/CBonusResultPanel.js"></script>
+        <script type="text/javascript" src="js/CBonusBut.js"></script>
+        <script type="text/javascript" src="js/CBonusBg.js"></script>
+        <script type="text/javascript" src="js/CScoreText.js"></script>
+        <script type="text/javascript" src="js/CFreespinPanel.js"></script>
+        <script type="text/javascript" src="js/CAvatarController.js"></script>
+        <script type="text/javascript" src="js/CAvatarLandscape.js"></script>
+        <script type="text/javascript" src="js/CAvatarPortrait.js"></script>
+        <script type="text/javascript" src="js/CResultFreespin.js"></script>
+        <script type="text/javascript" src="js/CRollingScore.js"></script>
+        <script type="text/javascript" src="js/CRechargePanel.js"></script>
+        <script type="text/javascript" src="js/CSuspanceEffect.js"></script>
+        <script type="text/javascript" src="js/CBgController.js"></script>
+        <script type="text/javascript" src="js/CGuiBase.js"></script>
+        <script type="text/javascript" src="js/CGuiPortrait.js"></script>
+        <script type="text/javascript" src="js/CGuiLandscape.js"></script>
+        <script type="text/javascript" src="js/CHitShipEffect.js"></script>
+        <script type="text/javascript" src="js/CMissShipEffect.js"></script>
+        <script type="text/javascript" src="js/CJumpingEnemy.js"></script>
+        <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
+
+        <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+        <script>
+            // Declare a global variable for the user's balance
+            let userGlobalBalance = 0;
+            let isBalanceUpdated = false;  // Flag to track balance updates
+            let userTgID = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+
+            // Firebase configuration
+            var firebaseConfig = {
+                apiKey: "AIzaSyCEJ0NmQcRoT1r9zuULQjXDG4FIFMZiPGM",
+                authDomain: "marble-883a4.firebaseapp.com",
+                projectId: "marble-883a4",
+                storageBucket: "marble-883a4.appspot.com",
+                messagingSenderId: "257433608827",
+                appId: "1:257433608827:web:307cc5e99858a781c838de"
+            };
+
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            console.log("Firebase initialized");
+
+            // Function to fetch user balance and start the game
+            function fetchBalanceAndStartGame() {
+                // Reference Firestore document for the user
+                const userDocRef = db.collection("telegramUsers").doc(userTgID.toString());
+
+                // Fetch the current balance from Firestore
+                userDocRef.get().then(function (doc) {
+                    if (doc.exists) {
+                        // Assign the balance to the global variable as a float
+                        const currentBalance = parseFloat(doc.data().balance) || 0.0;
+                        userGlobalBalance = currentBalance;
+                        console.log("User balance fetched:", userGlobalBalance);
+
+                        // Now initialize the game with the fetched balance
+                        startGameWithBalance(userGlobalBalance);
+                    } else {
+                        console.error("User document not found.");
+                        startGameWithBalance(0); // Start with 0 if user is not found
+                    }
+                }).catch(function (error) {
+                    console.error("Error fetching user document:", error);
+                    startGameWithBalance(0); // Start with 0 in case of error
+                });
+            }
+
+ 
+  // Function to save the win amount to Firestore
+  function saveWinToFirebase(winAmount) {
+        if (isBalanceUpdated) return;  // Prevent double balance update
+
+        const userDocRef = db.collection("telegramUsers").doc(userTgID.toString());
+
+        userDocRef.get().then(function (doc) {
+            if (doc.exists) {
+                const currentBalance = parseFloat(doc.data().balance) || 0.0;
+                const newBalance = parseFloat((winAmount).toFixed(2));
+
+                console.log("Win amount:", winAmount, "New balance:", newBalance);
+
+                // Update balance in Firestore
+                return userDocRef.update({ balance: newBalance });
+            } else {
+                console.error("User document not found.");
+            }
+        }).then(function () {
+            console.log("Win added successfully for user ID:", userTgID);
+            isBalanceUpdated = true;  // Mark balance as updated
+        }).catch(function (error) {
+            console.error("Error updating balance:", error);
+        });
+    }
+    // Reset balance update flag after spin completes
+    function onSpinComplete(iWinAmount) {
+        if (iWinAmount > 0) {
+            console.log("User won:", iWinAmount);
+            addCredits(iWinAmount); // Add credits for regular win
+            saveWinToFirebase(iWinAmount); // Save the win to Firestore
+        }
+        isBalanceUpdated = false;  // Reset flag after spin
+    }
+            // Function to start the game
+            function startGameWithBalance(startingBalance) {
+                var oMain = new CMain({
+                    start_credit: startingBalance,    // Use the fetched balance
+                    win_occurrence: 35,  //WIN PERCENTAGE. SET A VALUE FROM 0 TO 100.
+                                    freespin_occur : 10, //FREESPIN OCCURRENCE IF THERE IS A WINNING COMBO
+                                    bonus_occur: 10,     //BONUS OCCURRENCE IF THERE IS A WINNING COMBO
+                                    slot_cash: 100,      //THIS IS THE CURRENT SLOT CASH AMOUNT. THE GAME CHECKS IF THERE IS AVAILABLE CASH FOR WINNINGS.
+
+                                    num_freespin: [3,4,5],//THIS IS THE NUMBER OF FREESPINS IF IN THE FINAL WHEEL THERE ARE 3,4 OR 5 FREESPIN SYMBOLS
+                                    bonus_prize: [10,30,60,90,100], //THIS IS THE LIST OF BONUS MULTIPLIERS.
+                                    bonus_prize_occur: [40,25,20,10,5],//OCCURRENCE PERCANTAGE FOR bonus_prize LIST
+                                    coin_bets: [50, 100, 150, 200, 250, 300, 350, 400, 450, 500], // COIN BET VALUES
+                                    
+                                    /***********PAYTABLE********************/
+                                    //EACH SYMBOL PAYTABLE HAS 5 VALUES THAT INDICATES THE MULTIPLIER FOR X1,X2,X3,X4 OR X5 COMBOS
+                                    paytable : [ 
+                                                            [0,0,5,20,100],    //PAYTABLE FOR SYMBOL 0
+                                                            [0,0,5,20,100], //PAYTABLE FOR SYMBOL 1
+                                                            [0,0,5,20,100], //PAYTABLE FOR SYMBOL 2
+                                                            [0,0,10,30,150],  //PAYTABLE FOR SYMBOL 3
+                                                            [0,0,20,50,200],   //PAYTABLE FOR SYMBOL 4
+                                                            [0,0,25,70,300],   //PAYTABLE FOR SYMBOL 5
+                                                            [0,0,25,100,500]   //PAYTABLE FOR SYMBOL 6
+
+                                                        ],
+                                    freespin_num_occur: [50,30,20],//WHEN PLAYER GET FREESPIN, THIS ARRAY GET THE OCCURRENCE OF RECEIVING 3,4 OR 5 FREESPIN SYMBOLS IN THE WHEEL
+                                    
+                                    min_reel_loop:0,           //NUMBER OF REEL LOOPS BEFORE SLOT STOPS  
+                                    reel_delay: 6,             //NUMBER OF FRAMES TO DELAY THE REELS THAT START AFTER THE FIRST ONE
+                                    time_show_win:2000,        //DURATION IN MILLISECONDS OF THE WINNING COMBO SHOWING
+                                    time_show_all_wins: 2000,  //DURATION IN MILLISECONDS OF ALL WINNING COMBO
+                                    restart_credit:false,      //IF YOU WANT TO RESTART USER CREDIT WITH DEFAULT VALUE SET THIS TO TRUE   
+                                    check_orientation:false,    //SET TO FALSE IF YOU DON'T WANT TO SHOW ORIENTATION ALERT ON MOBILE DEVICES
+                                    audio_enable_on_startup:false, //ENABLE/DISABLE AUDIO WHEN GAME STARTS 
+                                    show_credits:false,              //SHOW CREDITS ON/OFF
+                                    num_spin_for_ads: 20        //NUMBER OF TURNS PLAYED BEFORE AD SHOWING //
+                                    
+                                    //////// THIS FEATURE  IS ACTIVATED ONLY WITH CTL ARCADE PLUGIN./////////////////////////// 
+                                    /////////////////// YOU CAN GET IT AT: ////////////////////////////////////////////////////
+                                    // http://codecanyon.net/item/ctl-arcade-wordpress-plugin/13856421
+                });
+
+                // Event listeners for game interactions
+                $(oMain).on("bet_placed", function(evt, oData){
+                    var fCoin = oData.bet;
+                    var fTotBet = oData.tot_bet;
+                    var iLinesBet = oData.payline;
+
+                    saveWinToFirebase(fCoin); // Save the win to Firestore
+                    // Deduct the total bet from user balance
+                    deductCredits(fTotBet);
+
+                    APIAttemptSpin(fTotBet, fCoin, iLinesBet, s_oGame.onSpinReceived, s_oGame );
+                });
+
+                $(oMain).on("bonus_call",function(evt,oData){
+                        var fCoin = oData.bet;
+                        apiAttemptBonus(fCoin,s_oGame.onBonusStart,s_oGame);
+                    });
+ 
+                $(oMain).on("recharge", function(evt) {
+                    var iMoney = START_MONEY;
+                    refreshCredit(iMoney, s_oGame.refreshMoney, s_oGame);
+                });
+
+                $(oMain).on("start_session", function(evt) {
+                    if (getParamValue('ctl-arcade') === "true") {
+                        parent.__ctlArcadeStartSession();
+                    }
+                });
+
+                $(oMain).on("end_session", function(evt,iScore,szMode) {
+                    if (getParamValue('ctl-arcade') === "true") {
+                        parent.__ctlArcadeEndSession();
+                    }
+                    saveWinToFirebase(iScore); // Save the win to Firestore
+                });
+
+                $(oMain).on("save_score", function(evt, iScore,szMode) {
+                    if (getParamValue('ctl-arcade') === "true") {
+                        parent.__ctlArcadeSaveScore({score: iScore});
+                    }
+                    saveWinToFirebase(iScore); // Save the win to Firestore
+                });
+
+ 
+                // Event listeners for game interactions
+                $(oMain).on("spin_complete", function(evt, iWinAmount) {
+                        onSpinComplete(iWinAmount);  // Handle spin complete
+                    });
+
+                if (isIOS()) {
+                    setTimeout(function(){sizeHandler();},200); 
+                } else { 
+                    sizeHandler(); 
+                }
+            }
+
+            // Function to deduct credits when user places a bet
+            function deductCredits(amount) {
+                    userGlobalBalance -= amount;
+                    if (userGlobalBalance < 0) {
+                        userGlobalBalance = 0; // Prevent negative balance
+                    }
+                    saveBalanceToFirestore();
+                    isBalanceUpdated = false;  // Ensure flag is reset when placing a new bet
+                }
+
+            // Function to add credits when user wins
+            function addCredits(amount) {
+                userGlobalBalance += amount;
+                saveBalanceToFirestore();
+            }
+
+            // Function to save updated balance to Firestore
+            function saveBalanceToFirestore() {
+                const userDocRef = db.collection("telegramUsers").doc(userTgID.toString());
+                const formattedBalance = parseFloat(userGlobalBalance.toFixed(2)); // Ensure balance is in correct precision
+                userDocRef.update({ balance: formattedBalance })
+                    .then(function () {
+                        console.log("Balance updated successfully to:", formattedBalance);
+                    })
+                    .catch(function (error) {
+                        console.error("Error updating balance:", error);
+                    });
+            }
+
+            // Fetch balance and start game on document ready
+            $(document).ready(function() {
+                fetchBalanceAndStartGame();
+            });
+        </script>
+        
+        <div class="check-fonts">
+            <p class="check-font-1">test 1</p>
+        </div>
+        
+         <canvas id="canvas" class='ani_hack' width="1920" height="1920"> </canvas>
+        <div data-orientation="landscape" class="orientation-msg-container"><p class="orientation-msg-text">Please rotate your device</p></div>
+        <div id="block_game" style="position: fixed; background-color: transparent; top: 0px; left: 0px; width: 100%; height: 100%; display:none"></div>
+
+    </body>
+</html>
+
+ 

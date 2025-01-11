@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style type="text/css">
+        body {
+            background-image: url("png/Background_1.png");
+            background-color: #cccccc;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            padding: 0px;
+            margin: 0px;
+        }
+        canvas {
+            display: block;
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+    <script src="js/phaser.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        let userTgID = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+        // Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyCEJ0NmQcRoT1r9zuULQjXDG4FIFMZiPGM",
+            authDomain: "marble-883a4.firebaseapp.com",
+            projectId: "marble-883a4",
+            storageBucket: "marble-883a4.appspot.com",
+            messagingSenderId: "257433608827",
+            appId: "1:257433608827:web:307cc5e99858a781c838de"
+        };
+
+        // Helper function to load a script
+        function loadScript(src, callback) {
+            var script = document.createElement('script');
+            script.src = src;
+            script.async = false;
+            script.onload = callback;
+            script.onerror = function () {
+                console.error("Error loading script:", src);
+            };
+            document.head.appendChild(script);
+        }
+
+        // Firebase initialization function
+        function initializeFirebase() {
+            firebase.initializeApp(firebaseConfig);
+            window.db = firebase.firestore();
+            console.log("Firebase initialized");
+            fetchUserBalanceAndStartGame(); // Fetch balance and start game after Firebase initializes
+        }
+
+        // Load Firebase SDK scripts synchronously
+        loadScript("https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js", function () {
+            loadScript("https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js", function () {
+                initializeFirebase();
+            });
+        });
+
+        // Function to fetch user balance and start the game
+        function fetchUserBalanceAndStartGame() {
+            if (!userTgID) {
+                console.error("Telegram User ID not found.");
+                return;
+            }
+
+            const userDocRef = window.db.collection("telegramUsers").doc(userTgID.toString());
+            userDocRef.get().then(function (doc) {
+                if (doc.exists) {
+                    const startingBalance = doc.data().balance || 100000;
+                    startGameWithBalance(startingBalance); // Pass balance to startGameWithBalance
+                } else {
+                    console.error("User document not found.");
+                }
+            }).catch(function (error) {
+                console.error("Error fetching user document:", error);
+            });
+        }
+
+        // Function to save score to Firebase
+        function saveScoreToFirebase(sessionScore) {
+            let userTgID = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+
+            if (!userTgID) {
+                console.error("Telegram User ID not found.");
+                return;
+            }
+
+            if (window.db) {
+                const userDocRef = window.db.collection("telegramUsers").doc(userTgID.toString());
+                userDocRef.get().then(function (doc) {
+                    if (doc.exists) {
+                        const currentBalance = doc.data().balance || 0;
+                        const newBalance = currentBalance + sessionScore;
+
+                        // Update the balance in Firestore
+                        userDocRef.update({ balance: newBalance })
+                            .then(function () {
+                                console.log("Balance updated successfully for user ID:", userTgID);
+                            })
+                            .catch(function (error) {
+                                console.error("Error updating balance:", error);
+                            });
+                    } else {
+                        console.error("User document not found.");
+                    }
+                }).catch(function (error) {
+                    console.error("Error fetching user document:", error);
+                });
+            } else {
+                console.error("Firestore is not initialized.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- remove or comment unused configs before publish -->
+    <script>
+        // Function to start the game
+        function startGameWithBalance(startingBalance) {
+            slotConfig_3x5.defaultCoins = startingBalance; // Set starting balance
+            console.log("Starting game with balance:", startingBalance);
+            defaultCoins: startingBalance;    // Use the fetched balance
+        }
+       // saveScoreToFirebase(changeCoinsEvents);
+      //alert(changeCoinsEvents);
+    </script>
+
+    <script src="js/slotConfig_3x5.js"></script>
+    <script src="js/mkutils.js"></script>
+    <script src="js/popups.js"></script>
+    <script src="js/state_machine.js"></script>
+    <script src="js/slot_classes.js"></script>
+    <script src="js/slotGame.js"></script>
+</body>
+</html>

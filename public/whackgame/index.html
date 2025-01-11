@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WHACK'EM ALL</title>
+        <link rel="stylesheet" href="css/reset.css" type="text/css">
+        <link rel="stylesheet" href="css/main.css" type="text/css">
+        <link rel="stylesheet" href="css/ios_fullscreen.css" type="text/css">
+        <link rel='shortcut icon' type='image/x-icon' href='./favicon.ico' />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui" />
+	<meta name="msapplication-tap-highlight" content="no"/>
+
+        <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="js/createjs.min.js"></script>
+        <script type="text/javascript" src="js/CLang.min.js"></script>
+        <script type="text/javascript" src="js/main.js"></script>
+        <!-- Firebase SDK -->
+        <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+        <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
+        <script>
+              let userTgID = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+            // Firebase configuration
+            var firebaseConfig = {
+                apiKey: "AIzaSyCEJ0NmQcRoT1r9zuULQjXDG4FIFMZiPGM",
+                authDomain: "marble-883a4.firebaseapp.com",
+                projectId: "marble-883a4",
+                storageBucket: "marble-883a4.appspot.com",
+                messagingSenderId: "257433608827",
+                appId: "1:257433608827:web:307cc5e99858a781c838de"
+            };
+
+            // Helper function to load a script
+            function loadScript(src, callback) {
+                var script = document.createElement('script');
+                script.src = src;
+                script.async = false; // Ensures synchronous loading
+                script.onload = callback;
+                script.onerror = function() {
+                    console.error("Error loading script:", src);
+                };
+                document.head.appendChild(script);
+            }
+
+            // Firebase initialization function
+            function initializeFirebase() {
+                firebase.initializeApp(firebaseConfig);
+                window.db = firebase.firestore();
+                console.log("Firebase initialized");
+            }
+
+            // Load Firebase SDK scripts synchronously
+            loadScript("https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js", function () {
+                loadScript("https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js", function () {
+                    initializeFirebase();
+                });
+            });
+
+            function saveScoreToFirebase(sessionScore) {
+                let userTgID = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+
+                if (!userTgID) {
+                    console.error("Telegram User ID not found.");
+                    return;
+                }
+
+                if (window.db) {
+                    const userDocRef = window.db.collection("telegramUsers").doc(userTgID.toString());
+                    userDocRef.get().then(function (doc) {
+                        if (doc.exists) {
+                            const currentBalance = doc.data().balance || 0;
+                            const newBalance = currentBalance + sessionScore;
+
+                            // Update the balance in Firestore
+                            userDocRef.update({ balance: newBalance })
+                                .then(function () {
+                                    console.log("Balance updated successfully for user ID:", userTgID);
+                                })
+                                .catch(function (error) {
+                                    console.error("Error updating balance:", error);
+                                });
+                        } else {
+                            console.error("User document not found.");
+                        }
+                    }).catch(function (error) {
+                        console.error("Error fetching user document:", error);
+                    });
+                } else {
+                    console.error("Firestore is not initialized.");
+                }
+            }
+        </script>
+    </head>
+    <body ondragstart="return false;" ondrop="return false;" >
+	<div style="position: fixed; background-color: transparent; top: 0px; left: 0px; width: 100%; height: 100%"></div>
+          <script>
+            $(document).ready(function(){
+                    var oMain = new CMain({
+                        points:[10,20,30,40,-100], //POINTS ASSIGNED FOR EACH CHARACTER
+                        start_spawn_time:1000,     //STARTING TIME INTERVAL FOR SPAWNING
+                        time_offset:1000,          //TIME AMOUNT IN MILLISECONDS FOR INCREASE GAME DIFFICULTY
+                        offset_spawn_time:10,      //THIS AMOUNT IS DECREASED FROM SPAWN TIME WHEN SCORE OFFSET IS REACHED
+                        super_hammer_time:1500,    //IF 3 OR MORE MOLES ARE HIT DURING THIS TIME INTERVAL (MILLISECONDS TIME), SUPER HAMMER MULTIPLIER IS ASSIGNED
+                        super_hammer_mult:2,       //EACH MOLE SCORE IS MULTIPLIED FOR THIS AMOUNT WHEN GAME IS IN SUPER HAMMER MODE
+                        time_super_hammer: 10000,  //TIME DURATION IN MILLISECONDS OF SUPERHAMMER MULTIPLIER
+                        level_time:60000,          //TIME (IN MILLISECONDS) FOR LEVEL
+                        audio_enable_on_startup:false, //ENABLE/DISABLE AUDIO WHEN GAME STARTS 
+                        fullscreen:true            //SET THIS TO FALSE IF YOU DON'T WANT TO SHOW FULLSCREEN BUTTON
+                    });
+                                           
+                                           
+                    $(oMain).on("start_session", function(evt) {
+                        if(getParamValue('ctl-arcade') === "true"){
+                             parent.__ctlArcadeStartSession();
+                        }
+                        //...ADD YOUR CODE HERE EVENTUALLY
+                    });
+
+                    $(oMain).on("end_session", function(evt) {
+                           if(getParamValue('ctl-arcade') === "true"){
+                               parent.__ctlArcadeEndSession();
+                           }
+                           //...ADD YOUR CODE HERE EVENTUALLY
+                    });
+
+                    $(oMain).on("save_score", function(evt,iScore) {
+                           if(getParamValue('ctl-arcade') === "true"){
+                               parent.__ctlArcadeSaveScore({score:iScore});
+                           }
+                           saveScoreToFirebase(iScore);
+                           //...ADD YOUR CODE HERE EVENTUALLY
+                    });
+
+                    $(oMain).on("show_interlevel_ad", function(evt) {
+                           if(getParamValue('ctl-arcade') === "true"){
+                               parent.__ctlArcadeShowInterlevelAD();
+                           }
+                           //...ADD YOUR CODE HERE EVENTUALLY
+                    });
+                    
+                    $(oMain).on("share_event", function(evt, iScore) {
+                           if(getParamValue('ctl-arcade') === "true"){
+                               parent.__ctlArcadeShareEvent({   img: TEXT_SHARE_IMAGE,
+                                                                title: TEXT_SHARE_TITLE,
+                                                                msg: TEXT_SHARE_MSG1 + iScore + TEXT_SHARE_MSG2,
+                                                                msg_share: TEXT_SHARE_SHARE1 + iScore + TEXT_SHARE_SHARE1});
+
+                           }
+                           //...ADD YOUR CODE HERE EVENTUALLY
+                    });
+
+                    if(isIOS()){
+                        setTimeout(function(){sizeHandler();},200); 
+                    }else{ 
+                        sizeHandler(); 
+                    }
+        });
+
+        </script>
+        <div class="check-fonts">
+            <p class="check-font-1">test 1</p>
+        </div> 
+        
+        <canvas id="canvas" class='ani_hack' width="1920" height="1920"> </canvas>
+        <div id="block_game" style="position: fixed; background-color: transparent; top: 0px; left: 0px; width: 100%; height: 100%; display:none"></div>
+
+    </body>
+</html>

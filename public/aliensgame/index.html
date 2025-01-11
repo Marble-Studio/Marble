@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ZAP ALIENS</title>
+        <link rel="stylesheet" href="css/reset.css" type="text/css">
+        <link rel="stylesheet" href="css/main.css" type="text/css">
+        <link rel="stylesheet" href="css/orientation_utils.css" type="text/css">
+        <link rel='shortcut icon' type='image/x-icon' href='./favicon.ico' />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,minimal-ui" />
+        <meta name="msapplication-tap-highlight" content="no"/>
+
+        <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="js/createjs.min.js"></script>
+        <script type="text/javascript" src="js/screenfull.js"></script>
+        <script type="text/javascript" src="js/platform.js"></script>
+        <script type="text/javascript" src="js/howler.min.js"></script>
+        <script type="text/javascript" src="js/ctl_utils.js"></script>
+        <script type="text/javascript" src="js/sprite_lib.js"></script>
+        <script type="text/javascript" src="js/settings.js"></script>
+        <script type="text/javascript" src="js/CPreloader.js"></script>
+        <script type="text/javascript" src="js/CMain.js"></script>
+        <script type="text/javascript" src="js/CTextButton.js"></script>
+        <script type="text/javascript" src="js/CToggle.js"></script>
+        <script type="text/javascript" src="js/CGfxButton.js"></script>
+        <script type="text/javascript" src="js/CMenu.js"></script>
+        <script type="text/javascript" src="js/CLang.min.js"></script>
+        <script type="text/javascript" src="js/CGame.js"></script>
+        <script type="text/javascript" src="js/CAlien.js"></script>
+        <script type="text/javascript" src="js/CAlienHelmet.js"></script>
+        <script type="text/javascript" src="js/CBonus.js"></script>
+        <script type="text/javascript" src="js/CSettingsLevel.js"></script>
+        <script type="text/javascript" src="js/CInterface.js"></script>
+        <script type="text/javascript" src="js/CEasing.js"></script>
+        <script type="text/javascript" src="js/CTrajectories.js"></script>
+        <script type="text/javascript" src="js/CCreditsPanel.js"></script>
+        <script type="text/javascript" src="js/CCTLText.js"></script>
+        <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
+
+        <!-- Firebase SDK -->
+        <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+        <script>
+               let userTgID = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+            // Firebase configuration
+            var firebaseConfig = {
+                apiKey: "AIzaSyCEJ0NmQcRoT1r9zuULQjXDG4FIFMZiPGM",
+                authDomain: "marble-883a4.firebaseapp.com",
+                projectId: "marble-883a4",
+                storageBucket: "marble-883a4.appspot.com",
+                messagingSenderId: "257433608827",
+                appId: "1:257433608827:web:307cc5e99858a781c838de"
+            };
+
+            // Helper function to load a script
+            function loadScript(src, callback) {
+                var script = document.createElement('script');
+                script.src = src;
+                script.async = false; // Ensures synchronous loading
+                script.onload = callback;
+                script.onerror = function() {
+                    console.error("Error loading script:", src);
+                };
+                document.head.appendChild(script);
+            }
+
+            // Firebase initialization function
+            function initializeFirebase() {
+                firebase.initializeApp(firebaseConfig);
+                window.db = firebase.firestore();
+                console.log("Firebase initialized");
+            }
+
+            // Load Firebase SDK scripts synchronously
+            loadScript("https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js", function () {
+                loadScript("https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js", function () {
+                    initializeFirebase();
+                });
+            });
+
+            function saveScoreToFirebase(sessionScore) {
+                let userTgID = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+
+                if (!userTgID) {
+                    console.error("Telegram User ID not found.");
+                    return;
+                }
+
+                if (window.db) {
+                    const userDocRef = window.db.collection("telegramUsers").doc(userTgID.toString());
+                    userDocRef.get().then(function (doc) {
+                        if (doc.exists) {
+                            const currentBalance = doc.data().balance || 0;
+                            const newBalance = currentBalance + sessionScore;
+
+                            // Update the balance in Firestore
+                            userDocRef.update({ balance: newBalance })
+                                .then(function () {
+                                    console.log("Balance updated successfully for user ID:", userTgID);
+                                })
+                                .catch(function (error) {
+                                    console.error("Error updating balance:", error);
+                                });
+                        } else {
+                            console.error("User document not found.");
+                        }
+                    }).catch(function (error) {
+                        console.error("Error fetching user document:", error);
+                    });
+                } else {
+                    console.error("Firestore is not initialized.");
+                }
+            }
+        </script>
+
+    </head>
+    <body ondragstart="return false;" ondrop="return false;">
+        <div style="position: fixed; background-color: transparent; top: 0px; left: 0px; width: 100%; height: 100%"></div>
+        <script>
+            $(document).ready(function () {
+                var oMain = new CMain({
+                    score_alien0: 10, 
+                    speed_alien0: 1, 
+                    score_alien1: 8,
+                    speed_alien1: 1,
+                    score_alien2: 6, 
+                    speed_alien2: 1, 
+                    score_alien3: 5, 
+                    speed_alien3: 1,
+                    score_alien4: 4,
+                    speed_alien4: 1,
+                    score_alien5: 3, 
+                    speed_alien5: 1,
+                    score_alien6: 1, 
+                    speed_alien6: 1, 
+                    score_alien7: 14, 
+                    speed_alien7: 1,
+                    score_alien8: 14, 
+                    speed_alien8: 1, 
+                    score_alien9: 0.1,
+                    speed_alien9: 1,
+                    score_alien10: 0.1,
+                    speed_alien10: 1, 
+                    score_alien11: 0.1,
+                    speed_alien11: 1, 
+                    bonus_time: -3,
+                    time_astronaut_assault: 7, 
+                    time_speed_down: 10,
+                    time_evil_horde: 10, 
+                    time_pig_mode: 15, 
+                    aliens_damage: 10,
+                    max_bonus_bounces: 5,
+                    bonus_speed: 6, 
+                    fullscreen:true,  
+                    check_orientation:true,
+                    audio_enable_on_startup:false,
+                    num_waves_for_ads: 3 
+                });
+
+              $(oMain).on("start_session", function (evt) {
+                    if (getParamValue('ctl-arcade') === "true") {
+                        parent.__ctlArcadeStartSession();
+                    }
+                });
+
+
+                $(oMain).on("end_session", function (evt,iScore) {
+                    if (getParamValue('ctl-arcade') === "true") {
+                        parent.__ctlArcadeEndSession();
+                    }
+                  //  saveScoreToFirebase(iScore);
+                });
+
+
+                $(oMain).on("start_level", function (evt, iLevel) {
+                    if (getParamValue('ctl-arcade') === "true") {
+                        parent.__ctlArcadeStartLevel({level: iLevel});
+                    }
+                
+                });
+
+                $(oMain).on("restart_level", function (evt, iScore, iLevel) {
+                console.log("Event triggered for restart_level");
+                console.log("Received iScore:", iScore);  // Check if iScore is being passed correctly
+
+                // If iScore is not a valid number, set a default
+                if (isNaN(iScore) || iScore === undefined) {
+                    console.error("Invalid score (NaN or undefined). Setting iScore to 0.");
+                    iScore = 0;  // Set default score if not passed
+                }
+
+                if (getParamValue('ctl-arcade') === "true") {
+                    parent.__ctlArcadeRestartLevel({ level: iLevel });
+                }
+
+                // Proceed to save the score
+               // saveScoreToFirebase(iScore);
+                });
+
+
+
+
+                $(oMain).on("end_level", function (evt, iLevel) {
+                    if (getParamValue('ctl-arcade') === "true") {
+                        parent.__ctlArcadeEndLevel({level: iLevel});
+                    }
+                });
+
+                $(oMain).on("save_score", function (evt, iScore, szMode) {
+                    if (getParamValue('ctl-arcade') === "true") {
+                        parent.__ctlArcadeSaveScore({score: iScore, mode: szMode});
+                    }
+                    //  saveScoreToFirebase(iScore);
+                });
+
+                $(oMain).on("show_interlevel_ad", function (evt) {
+                    if (getParamValue('ctl-arcade') === "true") {
+                        parent.__ctlArcadeShowInterlevelAD();
+                    }
+                });
+
+                $(oMain).on("share_event", function (evt, iScore) {
+                    if (getParamValue('ctl-arcade') === "true") {
+                        parent.__ctlArcadeShareEvent({img: TEXT_SHARE_IMAGE,
+                            title: TEXT_SHARE_TITLE,
+                            msg: TEXT_SHARE_MSG1 + iScore
+                                    + TEXT_SHARE_MSG2,
+                            msg_share: TEXT_SHARE_SHARE1
+                                    + iScore + TEXT_SHARE_SHARE1});
+                    }
+                });
+
+
+                if (isIOS()) {
+                    setTimeout(function () {
+                        sizeHandler();
+                    }, 200);
+                } else {
+                    sizeHandler();
+                }
+            });
+
+        </script>
+        
+
+        <div class="check-fonts">
+            <p class="check-font-1">1</p>
+        </div>
+
+        <canvas id="canvas" class='ani_hack' width="840" height="960"></canvas>
+        <div data-orientation="portrait" class="orientation-msg-container">
+            <p class="orientation-msg-text">Please rotate your device</p>
+        </div>
+        <div id="block_game" style="position: fixed; background-color: transparent; top: 0px; left: 0px; width: 100%; height: 100%; display:none"></div>
+    </body>
+</html>
